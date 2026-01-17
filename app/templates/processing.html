@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing - SPOT Action Spotting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: #888;
+            --text-muted: #555;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #00ff88;
+        }
+        
+        [data-theme="light"] {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #e8ecf1;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --text-primary: #1a1a2e;
+            --text-secondary: #555;
+            --text-muted: #777;
+            --accent-primary: #0095b3;
+            --accent-secondary: #00a86b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+        }
+        
+        .theme-toggle-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            transition: all 0.3s;
+        }
+        
+        [data-theme="light"] .theme-toggle-icon {
+            background: #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .progress-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--accent-primary);
+        }
+        
+        .status-detail {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            transition: width 0.5s ease;
+            animation: progress-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .steps {
+            text-align: left;
+            margin-top: 30px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .step-icon.pending {
+            background: var(--border-color);
+            color: var(--text-muted);
+        }
+        
+        .step-icon.active {
+            background: rgba(0, 217, 255, 0.2);
+            color: var(--accent-primary);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        .step-icon.done {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent-secondary);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .step-text {
+            flex: 1;
+            color: var(--text-secondary);
+        }
+        
+        .step-text.active {
+            color: var(--accent-primary);
+        }
+        
+        .step-text.done {
+            color: var(--accent-secondary);
+        }
+        
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            color: #ff6b6b;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 10px;
+            color: #1a1a2e;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <div class="theme-toggle-icon"></div>
+        <span id="themeLabel">Dark</span>
+    </button>
+    
+    <div class="container">
+        <h1>Processing Video</h1>
+        
+        <div class="progress-card">
+            <div class="spinner" id="spinner"></div>
+            
+            <div class="status" id="status">Initializing...</div>
+            <div class="status-detail" id="statusDetail">Please wait while we process your video</div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="steps">
+                <div class="step" id="step1">
+                    <div class="step-icon pending" id="step1Icon">1</div>
+                    <div class="step-text" id="step1Text">Extracting frames from video</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-icon pending" id="step2Icon">2</div>
+                    <div class="step-text" id="step2Text">Running SPOT model inference</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-icon pending" id="step3Icon">3</div>
+                    <div class="step-text" id="step3Text">Creating output video</div>
+                </div>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <a href="#" class="btn" id="viewResultBtn" style="display: none;">View Result</a>
+        </div>
+    </div>
+    
+    <script>
+        const jobId = "{{ job_id }}";
+        const filename = "{{ filename }}";
+        const maxFrames = {{ max_frames or 'null' }};
+        const scoreThreshold = {{ score_threshold }};
+        
+        const statusEl = document.getElementById('status');
+        const statusDetailEl = document.getElementById('statusDetail');
+        const progressFill = document.getElementById('progressFill');
+        const spinner = document.getElementById('spinner');
+        const errorMessage = document.getElementById('errorMessage');
+        const viewResultBtn = document.getElementById('viewResultBtn');
+        
+        function setStep(stepNum, state) {
+            const icon = document.getElementById(`step${stepNum}Icon`);
+            const text = document.getElementById(`step${stepNum}Text`);
+            
+            icon.className = 'step-icon ' + state;
+            text.className = 'step-text ' + state;
+            
+            if (state === 'done') {
+                icon.textContent = String.fromCharCode(10003); // checkmark
+            } else if (state === 'active') {
+                icon.textContent = stepNum;
+            }
+        }
+        
+        async function processVideo() {
+            try {
+                // Step 1: Start processing
+                setStep(1, 'active');
+                statusEl.textContent = 'Extracting frames...';
+                statusDetailEl.textContent = 'Converting video to individual frames';
+                progressFill.style.width = '10%';
+                
+                const response = await fetch(`/api/process/${jobId}/${filename}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        max_frames: maxFrames,
+                        score_threshold: scoreThreshold
+                    })
+                });
+                
+                // Simulate progress while waiting
+                let progress = 10;
+                const progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 5;
+                        progressFill.style.width = progress + '%';
+                        
+                        if (progress > 30 && progress < 60) {
+                            setStep(1, 'done');
+                            setStep(2, 'active');
+                            statusEl.textContent = 'Running inference...';
+                            statusDetailEl.textContent = 'Detecting actions in video';
+                        } else if (progress >= 60) {
+                            setStep(2, 'done');
+                            setStep(3, 'active');
+                            statusEl.textContent = 'Creating output video...';
+                            statusDetailEl.textContent = 'Adding annotations and slow motion';
+                        }
+                    }
+                }, 500);
+                
+                const result = await response.json();
+                clearInterval(progressInterval);
+                
+                if (result.success) {
+                    // Complete all steps
+                    setStep(1, 'done');
+                    setStep(2, 'done');
+                    setStep(3, 'done');
+                    progressFill.style.width = '100%';
+                    
+                    statusEl.textContent = 'Processing Complete!';
+                    statusDetailEl.textContent = `Detected ${result.total_events} actions in ${result.num_frames} frames`;
+                    
+                    spinner.style.display = 'none';
+                    viewResultBtn.style.display = 'inline-block';
+                    viewResultBtn.href = `/view/${jobId}`;
+                } else {
+                    throw new Error(result.error || 'Processing failed');
+                }
+                
+            } catch (error) {
+                statusEl.textContent = 'Error';
+                statusDetailEl.textContent = error.message;
+                spinner.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = error.message;
+            }
+        }
+        
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('themeLabel').textContent = newTheme === 'dark' ? 'Dark' : 'Light';
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeLabel').textContent = savedTheme === 'dark' ? 'Dark' : 'Light';
+        
+        // Start processing when page loads
+        processVideo();
+    </script>
+</body>
+</html>

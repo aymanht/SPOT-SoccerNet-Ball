@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result - SPOT Action Spotting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: #aaa;
+            --text-muted: #666;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #00ff88;
+        }
+        
+        [data-theme="light"] {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #e8ecf1;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --text-primary: #1a1a2e;
+            --text-secondary: #555;
+            --text-muted: #777;
+            --accent-primary: #0095b3;
+            --accent-secondary: #00a86b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+        }
+        
+        .theme-toggle-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            transition: all 0.3s;
+        }
+        
+        [data-theme="light"] .theme-toggle-icon {
+            background: #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        video {
+            width: 100%;
+            display: block;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        [data-theme="light"] .legend {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .info-box strong {
+            color: var(--accent-primary);
+        }
+        
+        @media (max-width: 600px) {
+            .theme-toggle {
+                position: static;
+                margin: 0 auto 20px;
+                width: fit-content;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <div class="theme-toggle-icon"></div>
+                <span id="themeLabel">Dark</span>
+            </button>
+            <h1>Action Spotting Results</h1>
+        </header>
+        
+        <div class="result-card">
+            <div class="video-container">
+                <video controls autoplay>
+                    <source src="{{ url_for('get_result', job_id=job_id) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+            <div class="controls">
+                <a href="{{ url_for('get_result', job_id=job_id) }}" class="btn btn-primary" download="spot_result.mp4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Download Video
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    Process Another Video
+                </a>
+            </div>
+            
+            <div class="legend">
+                <h3>Action Types Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(255, 0, 0);"></div>
+                        <span>Ball Player Block</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(0, 255, 0);"></div>
+                        <span>Cross</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(0, 0, 255);"></div>
+                        <span>Drive</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(255, 255, 0);"></div>
+                        <span>Free Kick</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(255, 0, 255);"></div>
+                        <span>Goal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(0, 255, 255);"></div>
+                        <span>Header</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(255, 128, 0);"></div>
+                        <span>High Pass</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(128, 0, 255);"></div>
+                        <span>Out</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(0, 128, 255);"></div>
+                        <span>Pass</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(128, 255, 0);"></div>
+                        <span>Successful Tackle</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgb(255, 64, 64);"></div>
+                        <span>Shot</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>Note:</strong> The video plays at normal speed for regular frames and slows down when an action is detected, 
+                allowing you to clearly see the predicted action type and confidence score.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('themeLabel').textContent = newTheme === 'dark' ? 'Dark' : 'Light';
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeLabel').textContent = savedTheme === 'dark' ? 'Dark' : 'Light';
+    </script>
+</body>
+</html>

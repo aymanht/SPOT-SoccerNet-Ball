@@ -1,0 +1,24 @@
+# Core dependencies
+torch>=1.11.0
+torchvision>=0.12.0
+timm>=0.5.4
+
+# Data processing
+numpy>=1.21.4
+opencv-python>=4.5.0
+Pillow>=9.1.0
+moviepy>=1.0.3
+
+# Visualization
+matplotlib>=3.2.2
+
+# Web application
+flask>=2.0.0
+werkzeug>=2.0.0
+
+# Utilities
+tqdm>=4.62.0
+tabulate>=0.8.9
+
+# SoccerNet utilities (for downloading data)
+SoccerNet>=0.1.8
