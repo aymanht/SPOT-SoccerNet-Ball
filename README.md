@@ -83,7 +83,7 @@ SPOT-SoccerNet-Ball/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/SPOT-SoccerNet-Ball.git
+git clone https://github.com/aymanht/SPOT-SoccerNet-Ball.git
 cd SPOT-SoccerNet-Ball
 ```
 
